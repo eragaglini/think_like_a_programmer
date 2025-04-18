@@ -1,7 +1,6 @@
 // Your First C++ Program
 
 #include <iostream>
-#include <cmath>
 
 int getInt()
 {
