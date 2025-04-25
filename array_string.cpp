@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-typedef char* arrayString;
+typedef char *arrayString;
 
 char characterAt(arrayString s, int position)
 {
@@ -18,7 +18,7 @@ int length(arrayString s)
     return count;
 }
 
-void append(arrayString& s, char c)
+void append(arrayString &s, char c)
 {
     int oldLength = length(s);
     arrayString newS = new char[oldLength + 2];
@@ -30,6 +30,34 @@ void append(arrayString& s, char c)
     newS[oldLength + 1] = 0;
     delete[] s;
     s = newS;
+}
+
+arrayString substring(const arrayString &s, int from, int length)
+{
+    arrayString newS = new char[length];
+    for (size_t i = 0; i < length; i++)
+    {
+        /* code */
+        newS[i] = s[i + from - 1];
+    }
+    newS[length] = 0;
+    return newS;
+}
+
+
+void substringTester()
+{
+    arrayString a = new char[5];
+    a[0] = 'a';
+    a[1] = 'b';
+    a[2] = 'c';
+    a[3] = 'd';
+    a[4] = 'e';
+    a[5] = 'f';
+    a[6] = 'g';
+    a[7] = 0;
+    arrayString b = substring(a, 3, 4);
+    cout << b << endl;
 }
 
 void appendTester()
@@ -48,7 +76,7 @@ void appendTester()
     cout << b << "\n";
 }
 
-void concatenate(arrayString& s1, arrayString s2)
+void concatenate(arrayString &s1, arrayString s2)
 {
     int s1_OldLength = length(s1);
     int s2_Length = length(s2);
@@ -91,14 +119,15 @@ void concatenateTester()
     c[0] = 0;
     concatenate(c, a);
     cout << a << "\n"
-        << c << "\n";
-    cout << (void*)a << "\n"
-        << (void*)c << "\n";
+         << c << "\n";
+    cout << (void *)a << "\n"
+         << (void *)c << "\n";
 }
 
 int main()
 {
     appendTester();
     concatenateTester();
+    substringTester();
     return 0;
 }
