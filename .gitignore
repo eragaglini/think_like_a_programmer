@@ -1,3 +1,5 @@
 a.out
 ### VisualStudioCode ###
 .vscode/
+my-dprintf-breakpoints
+my-main-breakpoints
