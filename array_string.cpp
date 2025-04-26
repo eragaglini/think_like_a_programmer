@@ -260,10 +260,10 @@ void replaceStringTester()
 
 int main()
 {
-    // appendTester();
-    // concatenateTester();
-    // substringTester();
+    appendTester();
+    concatenateTester();
+    substringTester();
     replaceStringTester();
-    // stringsEqualTester();
+    stringsEqualTester();
     return 0;
 }
