@@ -192,7 +192,7 @@ arrayString replaceStringHelper(arrayString &s, arrayString target, arrayString 
     if (
         (s_length < target_length) ||
         ((s_length == target_length) && !checkStringsEqual))
-        return s;
+        return copyArrayStr(s);
     else if (checkStringsEqual)
     {
         /* code */
@@ -233,7 +233,7 @@ void replaceString(arrayString &s, arrayString target, arrayString replaceText)
         /* code */
         return;
     }
-    
+
     arrayString newS = replaceStringHelper(s, target, replaceText);
     delete[] s;
     s = newS;
@@ -252,6 +252,10 @@ void replaceStringTester()
     s[6] = 'e';
     s[7] = 'e';
     s[8] = 0;
+
+    arrayString s = new char[2];
+    s[0] = 'a';
+    s[1] = 0;
 
     arrayString target = new char[3];
     target[0] = 'a';
