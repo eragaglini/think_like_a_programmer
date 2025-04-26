@@ -8,7 +8,7 @@ char characterAt(arrayString s, int position)
     return s[position + 1];
 }
 
-void output(arrayString s)
+void output(const arrayString s)
 {
     for (size_t i = 1; i <= s[0]; i++)
     {
