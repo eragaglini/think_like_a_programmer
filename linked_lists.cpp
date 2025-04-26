@@ -41,8 +41,44 @@ void printLinkedList(const studentCollection &sc)
     while (loopPtr != NULL)
     {
         /* code */
-        cout << loopPtr->grade << endl;
+        cout << "Student Num: " << loopPtr->studentNum << ", grade: " << loopPtr->grade << endl;
         loopPtr = loopPtr->next;
+    }
+}
+
+void removeRecord(studentCollection &sc, int studentNum)
+{
+    if (sc == NULL)
+    {
+        /* code */
+        return;
+    }
+    else if (sc->studentNum == studentNum)
+    {
+        /* code */
+        listNode *temp = sc->next;
+        delete sc;
+        sc = temp;
+        return;
+    }
+    else
+    {
+        listNode *loopPtr = sc;
+        while (loopPtr->next->studentNum != studentNum)
+        {
+            /* code */
+            loopPtr = loopPtr->next;
+            if (loopPtr->next == NULL)
+            {
+                /* code */
+                return;
+            }
+        }
+
+        listNode *temp = loopPtr->next;
+        loopPtr->next = loopPtr->next->next;
+        delete temp;
+        return;
     }
 }
 
@@ -63,12 +99,24 @@ int main()
     node2->next = node3;
     node3->next = NULL;
     addRecord(sc, 1274, 91);
-    // printLinkedList(sc);
+    cout << "Students: " << endl;
+    printLinkedList(sc);
+    cout << " ------------ " << endl;
     int avg = averageRecord(sc);
+    cout << "Average grade: " << endl;
     cout << avg << endl;
+    cout << " ------------ " << endl;
     node1 = node2 = node3 = NULL;
-    avg = averageRecord(sc);
-    cout << avg << endl;
-    printLinkedList(node1);
+
+
+    removeRecord(sc, 9);
+    cout << "Students after trying to remove student with id == 9: " << endl;
+    printLinkedList(sc);
+    cout << " ------------ " << endl;
+
+    removeRecord(sc, 1001);
+    cout << "Students after trying to remove student with id == 1001: " << endl;
+    printLinkedList(sc);
+    cout << " ------------ " << endl;
     return 0;
 }
