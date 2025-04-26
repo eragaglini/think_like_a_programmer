@@ -228,7 +228,15 @@ arrayString replaceStringHelper(arrayString &s, arrayString target, arrayString 
 
 void replaceString(arrayString &s, arrayString target, arrayString replaceText)
 {
-    s = replaceStringHelper(s, target, replaceText);
+    if ((target == NULL) || (replaceText == NULL))
+    {
+        /* code */
+        return;
+    }
+    
+    arrayString newS = replaceStringHelper(s, target, replaceText);
+    delete[] s;
+    s = newS;
 }
 
 void replaceStringTester()
