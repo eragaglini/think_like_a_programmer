@@ -104,6 +104,14 @@ linkdListInt sumLinkedLists(const linkdListInt &s1, const linkdListInt &s2)
     return setTotalValue(getTotalValue(s1) + getTotalValue(s2));
 }
 
+void deleteLinkedList(linkdListInt& list) {
+    while (list != NULL) {
+        listNodeInt* next = list->next;
+        delete list;
+        list = next;
+    }
+}
+
 int main()
 {
     linkdListInt list1 = setTotalValue(156);
@@ -125,6 +133,13 @@ int main()
         /* code */
         cout << "Value must be positive!!" << endl;
     }
+
+    deleteLinkedList(list1);
+    deleteLinkedList(list2);
+    deleteLinkedList(list3);
+    deleteLinkedList(list4);
+    deleteLinkedList(list5);
+    deleteLinkedList(list6);
 
     return 0;
 }
