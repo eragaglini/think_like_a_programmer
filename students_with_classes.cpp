@@ -66,6 +66,9 @@ public:
     void removeRecord(int idNum);
     ~studentCollection();
     studentCollection &operator=(const studentCollection &rhs);
+    float averageRecord();
+    studentCollection *RecordsWithinRange(int low_grade, int high_grade);
+    void output();
 
 private:
     typedef studentNode *studentList;
@@ -76,7 +79,6 @@ private:
 
 int main()
 {
-    std::cout << "Hello, World!" << std::endl;
 
     studentRecord test = studentRecord(77, 1001, "Test");
     cout << test.name() << endl;
@@ -91,7 +93,46 @@ int main()
     s.addRecord(stu3);
     s.addRecord(stu2);
     s.addRecord(stu1);
+    cout << s.averageRecord() << endl;
     s.removeRecord(4875);
+
+    studentCollection classRoster;
+
+    // Adding 30 student records manually
+    classRoster.addRecord(studentRecord(95, 1001, "Alice"));
+    classRoster.addRecord(studentRecord(88, 1002, "Bob"));
+    classRoster.addRecord(studentRecord(76, 1003, "Charlie"));
+    classRoster.addRecord(studentRecord(92, 1004, "Diana"));
+    classRoster.addRecord(studentRecord(81, 1005, "Eve"));
+    classRoster.addRecord(studentRecord(67, 1006, "Frank"));
+    classRoster.addRecord(studentRecord(73, 1007, "Grace"));
+    classRoster.addRecord(studentRecord(89, 1008, "Hank"));
+    classRoster.addRecord(studentRecord(94, 1009, "Ivy"));
+    classRoster.addRecord(studentRecord(78, 1010, "Jack"));
+    classRoster.addRecord(studentRecord(85, 1011, "Karen"));
+    classRoster.addRecord(studentRecord(91, 1012, "Leo"));
+    classRoster.addRecord(studentRecord(82, 1013, "Mona"));
+    classRoster.addRecord(studentRecord(74, 1014, "Nina"));
+    classRoster.addRecord(studentRecord(87, 1015, "Oscar"));
+    classRoster.addRecord(studentRecord(96, 1016, "Paul"));
+    classRoster.addRecord(studentRecord(79, 1017, "Quinn"));
+    classRoster.addRecord(studentRecord(84, 1018, "Rachel"));
+    classRoster.addRecord(studentRecord(90, 1019, "Steve"));
+    classRoster.addRecord(studentRecord(77, 1020, "Tina"));
+    classRoster.addRecord(studentRecord(83, 1021, "Uma"));
+    classRoster.addRecord(studentRecord(86, 1022, "Victor"));
+    classRoster.addRecord(studentRecord(93, 1023, "Wendy"));
+    classRoster.addRecord(studentRecord(80, 1024, "Xander"));
+    classRoster.addRecord(studentRecord(72, 1025, "Yara"));
+    classRoster.addRecord(studentRecord(68, 1026, "Zane"));
+    classRoster.addRecord(studentRecord(75, 1027, "Liam"));
+    classRoster.addRecord(studentRecord(88, 1028, "Sophia"));
+    classRoster.addRecord(studentRecord(92, 1029, "Ethan"));
+    classRoster.addRecord(studentRecord(89, 1030, "Olivia"));
+
+    studentCollection newClassRoosterPtr = *classRoster.RecordsWithinRange(75, 80);
+
+    newClassRoosterPtr.output();
 
     return 0;
 }
@@ -194,6 +235,20 @@ void studentCollection::addRecord(studentRecord newStudent)
     _listHead = newNode;
 }
 
+float studentCollection::averageRecord()
+{
+    int sum = 0;
+    int length = 0;
+    studentList listPtr = this->_listHead;
+    while (listPtr != NULL)
+    {
+        sum += listPtr->studentData.grade();
+        listPtr = listPtr->next;
+        length++;
+    }
+    return (length > 0) ? ((float) sum / (float)length) : sum;
+}
+
 studentRecord studentCollection::recordWithNumber(int idNum)
 {
     studentNode *loopPtr = _listHead;
@@ -283,4 +338,42 @@ studentCollection &studentCollection::operator=(const studentCollection &rhs)
 studentCollection::studentCollection(const studentCollection &original)
 {
     _listHead = copiedList(original._listHead);
+}
+
+studentCollection *studentCollection::RecordsWithinRange(int low_range, int high_range)
+{
+    studentCollection * newStudentCollectionPtr = new studentCollection;
+    studentList loopPtr = this->_listHead;
+    while (loopPtr != NULL)
+    {
+        /* code */
+        if (
+            (loopPtr->studentData.grade() > low_range)
+            &&
+            (loopPtr->studentData.grade() < high_range)
+        )
+        {
+            /* code */
+            studentList studPtr = new studentNode;
+            studPtr->studentData.setGrade(loopPtr->studentData.grade());
+            studPtr->studentData.setName(loopPtr->studentData.name());
+            studPtr->next = NULL;
+            newStudentCollectionPtr->addRecord(studPtr->studentData);
+        }
+        loopPtr = loopPtr->next;
+    }
+    
+    return newStudentCollectionPtr;
+}
+
+void studentCollection::output()
+{
+    studentList loopPtr = this->_listHead;
+    while (loopPtr != NULL)
+    {
+        /* code */
+        cout << "Name: " << loopPtr->studentData.name() << ", grade: " << loopPtr->studentData.grade() << endl;;
+        loopPtr = loopPtr->next;
+    }
+    cout << endl;
 }
