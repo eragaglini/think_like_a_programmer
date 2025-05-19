@@ -54,7 +54,7 @@ double arrayMedian(int intArray[], int ARRAY_SIZE)
     }
     else
     {
-        return (newArray[NEW_ARRAY_SIZE / 2] + newArray[(NEW_ARRAY_SIZE / 2) - 1]) / 2;
+        return (newArray[NEW_ARRAY_SIZE / 2] + newArray[(NEW_ARRAY_SIZE / 2) - 1]) / 2.0;
     }
 }
 
