@@ -2,6 +2,7 @@
 #include <vector>
 #include <bits/stdc++.h>
 #include <algorithm>
+#include <type_traits>
 
 using namespace std;
 
@@ -11,6 +12,102 @@ struct studentRecord
     int grade;
 };
 typedef std::vector<studentRecord> studentCollection;
+
+struct listNode
+{
+    studentRecord studentData;
+    listNode *next;
+};
+typedef listNode *linkedList;
+
+struct HashMap
+{
+    vector<linkedList> buckets;
+};
+
+hash<int> h;
+
+int get_index(int key, int size)
+{
+    return h(key) % size;
+}
+
+linkedList add_record(linkedList list, listNode *node)
+{
+    node->next = list;
+    return node;
+}
+
+HashMap get_hash_map(studentCollection &sc, int size = 100)
+{
+    std::vector<linkedList> buckets;
+    buckets.reserve(size);
+    for (int i = 0; i < size; i++)
+    {
+        buckets.push_back(NULL);
+    }
+
+    for (size_t i = 0; i < sc.size(); i++)
+    {
+        /* code */
+        listNode *newNode = new listNode;
+        newNode->studentData = sc[i];
+        int index = get_index(sc[i].studentNum, buckets.size());
+        buckets[index] = add_record(buckets[index], newNode);
+    }
+    HashMap hash_map = {
+        buckets};
+    return hash_map;
+}
+
+void printLinkedList(const linkedList &sc)
+{
+    listNode *loopPtr = sc;
+    while (loopPtr != NULL)
+    {
+        /* code */
+        cout << "Student Num: " << loopPtr->studentData.studentNum << ", grade: " << loopPtr->studentData.grade << endl;
+        loopPtr = loopPtr->next;
+    }
+}
+
+void print_hash_map(const HashMap &hash_map)
+{
+    cout << "Hash Map: " << endl;
+    for (size_t i = 0; i < hash_map.buckets.size(); i++)
+    {
+        /* code */
+        cout << "buckets " << i << ": " << endl;
+        printLinkedList(hash_map.buckets[i]);
+        cout << " ---- " << endl;
+    }
+}
+studentRecord findStudent(const int studentNum, linkedList &buckets)
+{
+
+    studentRecord dummy_node = {
+        -1,
+        -1};
+    if (buckets == NULL)
+        return dummy_node;
+    listNode *loopPtr = buckets;
+    while (loopPtr != NULL)
+    {
+        /* code */
+        if (loopPtr->studentData.studentNum == studentNum)
+        {
+            /* code */
+            return loopPtr->studentData;
+        }
+        loopPtr = loopPtr->next;
+    }
+    return dummy_node;
+}
+
+studentRecord get_student_record(int key, HashMap hash_map)
+{
+    return findStudent(key, hash_map.buckets[get_index(key, hash_map.buckets.size())]);
+}
 
 bool compare_by_id(const studentRecord &a, const studentRecord &b)
 {
@@ -113,13 +210,18 @@ int main()
 
     // student id to be searched
     int stuNum = 1070;
-    int index = interpolation_search(sc, 0, sc.size() -1, stuNum);
+    int index = interpolation_search(sc, 0, sc.size() - 1, stuNum);
 
     // If element was found
     if (index != -1)
         cout << "Element found at index " << index << endl;
     else
         cout << "Element not found." << endl;
+
+    HashMap hash_map = get_hash_map(sc);
+    print_hash_map(hash_map);
+
+    cout << get_student_record(1080, hash_map).grade << endl;
 
     return 0;
 }
