@@ -49,6 +49,37 @@ private:
     bool isValidGrade(int grade);
 };
 
+
+
+// This declaration creates a type named firstStudentPolicy as a pointer to a
+// function that returns a bool and takes two parameters of type studentRecord.
+// The parentheses around * firstStudentPolicy are necessary to prevent the
+// declaration from being interpreted as a function that returns a pointer to a
+// bool.
+typedef bool (*firstStudentPolicy)(studentRecord r1, studentRecord r2);
+
+// With this declaration in place, we can create our three policy functions:
+bool higherGrade(studentRecord r1, studentRecord r2)
+{
+    return r1.grade() > r2.grade();
+}
+bool lowerStudentNumber(studentRecord r1, studentRecord r2)
+{
+    return r1.studentID() < r2.studentID();
+}
+bool nameComesFirst(studentRecord r1, studentRecord r2)
+{
+    return strcmp(r1.name().c_str(), r2.name().c_str()) < 0;
+}
+
+class scIterator;
+
+enum FirstStudentPolicy {
+  LOWER_STUDENT_NUMBER,
+  NAMES_COMES_FIRST,
+  HIGHER_GRADE
+};
+
 class studentCollection
 {
 private:
@@ -69,13 +100,33 @@ public:
     float averageRecord();
     studentCollection *RecordsWithinRange(int low_grade, int high_grade);
     void output();
+    void setFirstStudentPolicy(FirstStudentPolicy val);
+    studentRecord firstStudent();
+    friend class scIterator;
+    scIterator firstItemIterator();
 
 private:
+    firstStudentPolicy _currentPolicy;
     typedef studentNode *studentList;
     studentList _listHead;
     studentList copiedList(const studentList original);
     void deleteList(studentList &listPtr);
 };
+
+
+class scIterator
+{
+public:
+    scIterator();
+    scIterator(studentCollection::studentNode *initial);
+    void advance();
+    bool pastEnd();
+    studentRecord student();
+
+private:
+    studentCollection::studentNode *current;
+};
+
 
 int main()
 {
@@ -133,6 +184,16 @@ int main()
     studentCollection newClassRoosterPtr = *classRoster.RecordsWithinRange(75, 80);
 
     newClassRoosterPtr.output();
+
+    classRoster.setFirstStudentPolicy(HIGHER_GRADE);
+    cout << classRoster.firstStudent().name() << endl;
+
+    classRoster.setFirstStudentPolicy(NAMES_COMES_FIRST);
+    cout << classRoster.firstStudent().name() << endl;
+
+
+    classRoster.setFirstStudentPolicy(LOWER_STUDENT_NUMBER);
+    cout << classRoster.firstStudent().name() << endl;
 
     return 0;
 }
@@ -225,6 +286,7 @@ bool studentRecord::isValidName(string str)
 studentCollection::studentCollection()
 {
     _listHead = NULL;
+    _currentPolicy = NULL;
 }
 
 void studentCollection::addRecord(studentRecord newStudent)
@@ -246,7 +308,7 @@ float studentCollection::averageRecord()
         listPtr = listPtr->next;
         length++;
     }
-    return (length > 0) ? ((float) sum / (float)length) : sum;
+    return (length > 0) ? ((float)sum / (float)length) : sum;
 }
 
 studentRecord studentCollection::recordWithNumber(int idNum)
@@ -342,16 +404,14 @@ studentCollection::studentCollection(const studentCollection &original)
 
 studentCollection *studentCollection::RecordsWithinRange(int low_range, int high_range)
 {
-    studentCollection * newStudentCollectionPtr = new studentCollection;
+    studentCollection *newStudentCollectionPtr = new studentCollection;
     studentList loopPtr = this->_listHead;
     while (loopPtr != NULL)
     {
         /* code */
         if (
-            (loopPtr->studentData.grade() > low_range)
-            &&
-            (loopPtr->studentData.grade() < high_range)
-        )
+            (loopPtr->studentData.grade() > low_range) &&
+            (loopPtr->studentData.grade() < high_range))
         {
             /* code */
             studentList studPtr = new studentNode;
@@ -362,7 +422,7 @@ studentCollection *studentCollection::RecordsWithinRange(int low_range, int high
         }
         loopPtr = loopPtr->next;
     }
-    
+
     return newStudentCollectionPtr;
 }
 
@@ -372,8 +432,92 @@ void studentCollection::output()
     while (loopPtr != NULL)
     {
         /* code */
-        cout << "Name: " << loopPtr->studentData.name() << ", grade: " << loopPtr->studentData.grade() << endl;;
+        cout << "Name: " << loopPtr->studentData.name() << ", grade: " << loopPtr->studentData.grade() << endl;
+        ;
         loopPtr = loopPtr->next;
     }
     cout << endl;
+}
+
+void studentCollection::setFirstStudentPolicy(FirstStudentPolicy value)
+{
+    switch (value)
+    {
+    case HIGHER_GRADE:
+        /* code */
+        _currentPolicy = higherGrade;
+        break;
+    
+    case NAMES_COMES_FIRST:
+        /* code */
+        _currentPolicy = nameComesFirst;
+        break;
+    
+    case LOWER_STUDENT_NUMBER:
+        _currentPolicy = lowerStudentNumber;
+        break;
+    
+    default:
+        break;
+    }
+}
+
+studentRecord studentCollection::firstStudent()
+{
+    // If there is no list to review or no policy in place, we return a dummy record.
+    if (_listHead == NULL || _currentPolicy == NULL)
+    {
+        studentRecord dummyRecord(-1, -1, "");
+        return dummyRecord;
+    }
+    // Otherwise, we traverse the list to find the student who best meets the current policy,
+    studentNode *loopPtr = _listHead;
+    studentRecord first = loopPtr->studentData;
+    loopPtr = loopPtr->next;
+    while (loopPtr != NULL)
+    {
+        if (_currentPolicy(loopPtr->studentData, first))
+        {
+            first = loopPtr->studentData;
+        }
+        loopPtr = loopPtr->next;
+    }
+    return first;
+}
+
+scIterator::scIterator()
+{
+    current = NULL;
+}
+scIterator::scIterator(studentCollection::studentNode *initial)
+{
+    current = initial;
+}
+
+scIterator studentCollection::firstItemIterator()
+{
+    return scIterator(_listHead);
+}
+
+void scIterator::advance()
+{
+    if (current != NULL)
+        current = current->next;
+}
+bool scIterator::pastEnd()
+{
+    return current == NULL;
+}
+
+studentRecord scIterator::student()
+{
+    if (current == NULL)
+    {
+        studentRecord dummyRecord(-1, -1, "");
+        return dummyRecord;
+    }
+    else
+    {
+        return current->studentData;
+    }
 }
