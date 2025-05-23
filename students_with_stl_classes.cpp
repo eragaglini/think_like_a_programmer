@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <numeric>
-
+#include <map>
 #include <algorithm>
 #include <type_traits>
 
@@ -144,9 +144,9 @@ void add_record_to_student_collection(studentCollection& sc, int stuNum, int gr)
 }
 
 auto sum_grades = [](int sum, const studentRecord& p)
-{
-    return sum + p.grade;
-};
+    {
+        return sum + p.grade;
+    };
 
 
 double averageRecord(studentCollection sc)
@@ -248,5 +248,17 @@ int main()
 
     delete_hash_map(hash_map);
 
+
+    std::map<int, int> m;
+    for (size_t i = 0; i < sc.size(); i++)
+    {
+        /* code */
+        m[sc[i].studentNum] = sc[i].grade;
+    }
+
+    for (const auto& [key, value] : m)
+    {
+        std::cout << key << ": " << value << '\n';
+    }
     return 0;
 }
