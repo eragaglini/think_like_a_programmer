@@ -1,10 +1,14 @@
-#include <iostream>
+#include "project/hangman.hpp"
+#include <boost/range/adaptors.hpp>
 #include <fstream>
+#include <iostream>
 #include <random>
 #include <string>
-#include "project/hangman.hpp"
+#include <utility>
+#include <vector>
 
 using namespace std;
+using boost::adaptors::filtered;
 
 /*
 Hangman game (with a twist).
@@ -22,79 +26,111 @@ Hangman game (with a twist).
 
 int get_number_from_input()
 {
-  int x;
+    int x;
     std::cin >> x;
-    while(std::cin.fail()) {
+    while (std::cin.fail())
+    {
         std::cout << "Error" << std::endl;
         std::cin.clear();
-        std::cin.ignore(256,'\n');
+        std::cin.ignore(256, '\n');
         std::cin >> x;
     }
     return x;
 }
 
+string get_letter_from_input()
+{
+    string character;
+    cout << "\nPlease input a letter: ";
+    cin >> character;
+    while (!cin.good())
+    {
+        cout << "You have entered an invalid input, please input a letter: ";
+        cin.ignore(1024, '\n');
+        cin >> character;
+    }
+    return character;
+}
+
 int main()
 {
-    std::ifstream ifs(getWordsFilePath()); // note no mode needed
+    cout << "Welcome to Hangman (with a twist)!" << endl;
+
+    cout << "How many guesses do you need?" << endl;
+    int guesses = get_number_from_input();
+
+    cout << "How long does the word have to be? (3-6 letters)" << endl;
+
+    int length = get_number_from_input();
+    while ((length < 3) || (length > 6))
+    {
+        length = get_number_from_input();
+    }
+
+    std::ifstream ifs(get_words_file_path(length)); // note no mode needed
     if (!ifs.is_open())
     {
         cout << " Failed to open" << endl;
         return 1;
     }
-    else
+
+    vector<string> wordVector = get_word_vector_from_file(ifs);
+
+    // cout << "available words:: " << endl;
+    // for (size_t i = 0; i < wordVector.size(); i++)
+    // {
+    //     cout << wordVector[i] << endl;
+    // }
+
+    std::string pattern(length, '_');
+
+    while (guesses > 0)
     {
-        cout << "Opened OK" << endl;
-    }
-    string secret;
-    // Get a different random number each time the program runs
-    srand(time(0));
-    // Generate a random number between 0 and 100
-    int random_num = rand() % 1001;
-    secret = get_word_from_file(ifs, random_num);
-    string result = string(secret.length(), '_');
-
-    cout << "Welcome to Hangman!" << endl;
-
-    cout << "How many guesses do you want?" << endl;
-    int max_guesses = get_number_from_input();
-    int guesses = 0;
-    cout << "Maximum " << max_guesses << " mistakes are allowed\n\n";
-    cout << " ----------- \n";
-
-    while (guesses < max_guesses)
-    {
-        cout << "\nGuesses: " << guesses << "\n\n";
-        char letter;
-        cin >> letter;
-        auto pos = secret.find(letter);
-        cout << "\n";
-        if (pos == string::npos)
+        string ch = get_letter_from_input();
+        if ((ch.length() > 1) && (wordVector.size() == 1) &&
+            (ch == wordVector[0]))
         {
-            guesses++;
+            /* code */
+            cout << "Right!!! You win!" << endl;
+            return 0;
+        }
+        else if (ch.length() > 1)
+        {
+            /* code */
+            auto itr = find(wordVector.begin(), wordVector.end(), ch);
+            if (itr != wordVector.end())
+                wordVector.erase(itr);
+
+            cout << "Wrong answer!" << endl;
         }
         else
         {
-            for (size_t i = 0; i < result.size(); i++)
+            pair<string, vector<string>> best_option = get_best_option_pair(
+                group_words_by_pattern(wordVector, *ch.c_str(), pattern));
+            wordVector = best_option.second;
+            pattern = best_option.first;
+
+            if ((wordVector.size() == 1) && (pattern == wordVector[0]))
             {
-                if (secret[i] == letter)
-                {
-                    result[i] = letter;
-                }
+                /* code */
+                cout << "Right!!! You win!" << endl;
+                return 0;
             }
         }
 
-        cout << "\n";
-        cout << result << endl;
+        // cout << "Available words remaining:" << endl;
+        // for (size_t i = 0; i < wordVector.size(); i++)
+        // {
+        //     /* code */
+        //     cout << wordVector[i] << endl;
+        // }
+        // cout << pattern << endl;
 
-        if (result.find('_') == string::npos)
-        {
-            cout << "You won!" << endl;
-            return 0;
-        }
+        guesses--;
     }
 
+    cout << "Wrong answer!" << endl;
     cout << "You lost!" << endl;
-    cout << "The solution was: " << secret << endl;
 
     return 0;
 }

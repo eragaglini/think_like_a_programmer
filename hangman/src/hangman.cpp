@@ -1,7 +1,12 @@
 #include "project/hangman.hpp"
 #include <filesystem>
 #include <fstream>
+#include <iostream>
+#include <sstream>
 #include <string>
+#include <utility>
+#include <vector>
+
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -26,7 +31,7 @@
 #include <unistd.h>
 #endif
 
-std::string getModuleFilePath()
+std::string get_module_file_path()
 {
     std::string path;
 
@@ -102,28 +107,81 @@ std::string getModuleFilePath()
     return path;
 }
 
-std::string getExecutableParentPath()
+std::string get_executable_parent_path()
 {
-    std::string executablePath = getModuleFilePath();
+    std::string executablePath = get_module_file_path();
     std::filesystem::path path(executablePath);
     return path.parent_path();
 }
 
-std::filesystem::path getWordsFilePath()
+std::filesystem::path get_words_file_path(int length)
 {
-    return getExecutableParentPath().append("/words.txt");
+    std::string filename = "/" + std::to_string(length) + "-letter-words.txt";
+    // return get_executable_parent_path().append("/words.txt");
+    return get_executable_parent_path().append(filename);
+}
+
+std::vector<std::string> get_word_vector_from_file(std::ifstream& fs)
+{
+    // Creating a vector of strings
+    std::vector<std::string> wordVector;
+    fs.seekg(0, std::ios::beg);
+    std::string line;
+    while (std::getline(fs, line))
+    {
+        std::istringstream ss(line);
+        wordVector.push_back(line);
+    }
+    return wordVector;
 }
 
 std::string get_word_from_file(std::ifstream& fs, size_t line_num)
 {
-    fs.seekg(0, std::ios::beg);
-    std::string word;
-    for (size_t i = 0; i <= line_num; ++i)
+    std::vector<std::string> wordVector = get_word_vector_from_file(fs);
+    return wordVector[line_num % wordVector.size()];
+}
+
+std::string get_pattern_for_word(std::string word, char ch, std::string pattern)
+{
+    for (size_t i = 0; i < word.length(); i++)
     {
-        if (!std::getline(fs, word))
+        /* code */
+        if (word[i] == ch)
         {
-            break; // If the file has fewer lines than line_num, break early
+            pattern[i] = ch;
         }
     }
-    return word;
+    return pattern;
+}
+
+std::unordered_map<std::string, std::vector<std::string>>
+group_words_by_pattern(const std::vector<std::string>& wordVector, char ch,
+                       std::string old_pattern)
+{
+    std::unordered_map<std::string, std::vector<std::string>> grouped;
+
+    for (const std::string& word : wordVector)
+    {
+        std::string pattern = get_pattern_for_word(word, ch, old_pattern);
+        grouped[pattern].push_back(word);
+    }
+
+    return grouped;
+}
+
+std::pair<std::string, std::vector<std::string>> get_best_option_pair(
+    const std::unordered_map<std::string, std::vector<std::string>> pattern_map)
+{
+    std::pair<std::string, std::vector<std::string>> best_option =
+        *(pattern_map.begin());
+
+    for (auto& it : pattern_map)
+    {
+        // Do stuff
+        if (it.second.size() > best_option.second.size())
+        {
+            best_option = it;
+        }
+    }
+    return best_option;
 }
