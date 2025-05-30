@@ -15,4 +15,4 @@ std::unordered_map<std::string, std::vector<std::string>>
 group_words_by_pattern(const std::vector<std::string>& wordVector, char ch,
                        std::string old_pattern);
 std::pair<std::string, std::vector<std::string>> get_best_option_pair(
-    const std::unordered_map<std::string, std::vector<std::string>> map);
+    const std::unordered_map<std::string, std::vector<std::string>>& map);

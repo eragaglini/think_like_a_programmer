@@ -170,7 +170,7 @@ group_words_by_pattern(const std::vector<std::string>& wordVector, char ch,
 }
 
 std::pair<std::string, std::vector<std::string>> get_best_option_pair(
-    const std::unordered_map<std::string, std::vector<std::string>> pattern_map)
+    const std::unordered_map<std::string, std::vector<std::string>> &pattern_map)
 {
     std::pair<std::string, std::vector<std::string>> best_option =
         *(pattern_map.begin());

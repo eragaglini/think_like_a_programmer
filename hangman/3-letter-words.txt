@@ -43,7 +43,6 @@ bag
 lag
 tag
 sag
-log
 bog
 fog
 jog

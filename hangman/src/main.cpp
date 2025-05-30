@@ -52,9 +52,14 @@ string get_letter_from_input()
     return character;
 }
 
-int main()
+void display_winning_message(string word)
 {
-    cout << "Welcome to Hangman (with a twist)!" << endl;
+    cout << "Right!!! You win!" << endl;
+    cout << "The word was: " << word << endl;
+}
+
+void play_game()
+{
 
     cout << "How many guesses do you need?" << endl;
     int guesses = get_number_from_input();
@@ -71,7 +76,7 @@ int main()
     if (!ifs.is_open())
     {
         cout << " Failed to open" << endl;
-        return 1;
+        return;
     }
 
     vector<string> wordVector = get_word_vector_from_file(ifs);
@@ -91,8 +96,8 @@ int main()
             (ch == wordVector[0]))
         {
             /* code */
-            cout << "Right!!! You win!" << endl;
-            return 0;
+            display_winning_message(wordVector[0]);
+            return;
         }
         else if (ch.length() > 1)
         {
@@ -113,8 +118,8 @@ int main()
             if ((wordVector.size() == 1) && (pattern == wordVector[0]))
             {
                 /* code */
-                cout << "Right!!! You win!" << endl;
-                return 0;
+                display_winning_message(wordVector[0]);
+                return;
             }
         }
 
@@ -124,13 +129,31 @@ int main()
         //     /* code */
         //     cout << wordVector[i] << endl;
         // }
-        // cout << pattern << endl;
 
+        cout << pattern << endl;
         guesses--;
     }
 
     cout << "Wrong answer!" << endl;
     cout << "You lost!" << endl;
+}
 
+int main()
+{
+    cout << "Welcome to Hangman (with a twist)!" << endl;
+
+    string playing = "y";
+
+    while (playing == "y")
+    {
+        play_game();
+
+        cout << "Do you want to play another game? (y/n)" << endl;
+
+        do
+        {
+            playing = get_letter_from_input();
+        } while ((playing != "n") && (playing != "y"));
+    }
     return 0;
 }
