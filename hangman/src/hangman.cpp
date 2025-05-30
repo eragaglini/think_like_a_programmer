@@ -114,14 +114,12 @@ std::string get_executable_parent_path()
     return path.parent_path();
 }
 
-std::filesystem::path get_words_file_path(int length)
+std::filesystem::path get_words_file_path()
 {
-    std::string filename = "/" + std::to_string(length) + "-letter-words.txt";
-    // return get_executable_parent_path().append("/words.txt");
-    return get_executable_parent_path().append(filename);
+    return get_executable_parent_path().append("/words.txt");
 }
 
-std::vector<std::string> get_word_vector_from_file(std::ifstream& fs)
+std::vector<std::string> get_word_vector_from_file(std::ifstream& fs, size_t length)
 {
     // Creating a vector of strings
     std::vector<std::string> wordVector;
@@ -130,16 +128,16 @@ std::vector<std::string> get_word_vector_from_file(std::ifstream& fs)
     while (std::getline(fs, line))
     {
         std::istringstream ss(line);
-        wordVector.push_back(line);
+        if (length == line.size()) wordVector.push_back(line);
     }
     return wordVector;
 }
 
-std::string get_word_from_file(std::ifstream& fs, size_t line_num)
-{
-    std::vector<std::string> wordVector = get_word_vector_from_file(fs);
-    return wordVector[line_num % wordVector.size()];
-}
+// std::string get_word_from_file(std::ifstream& fs, size_t line_num)
+// {
+//     std::vector<std::string> wordVector = get_word_vector_from_file(fs);
+//     return wordVector[line_num % wordVector.size()];
+// }
 
 std::string get_pattern_for_word(std::string word, char ch, std::string pattern)
 {

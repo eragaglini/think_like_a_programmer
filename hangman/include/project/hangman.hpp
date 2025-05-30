@@ -6,8 +6,8 @@
 
 std::string get_module_file_path();
 std::string get_executable_parent_path();
-std::filesystem::path get_words_file_path(int length);
-std::vector<std::string> get_word_vector_from_file(std::ifstream& fs);
+std::filesystem::path get_words_file_path();
+std::vector<std::string> get_word_vector_from_file(std::ifstream& fs, size_t length);
 std::string get_word_from_file(std::ifstream& fs, size_t line_num);
 std::string get_pattern_for_word(std::string word, char ch,
                                  std::string old_pattern);

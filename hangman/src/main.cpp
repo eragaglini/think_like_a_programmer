@@ -72,14 +72,14 @@ void play_game()
         length = get_number_from_input();
     }
 
-    std::ifstream ifs(get_words_file_path(length)); // note no mode needed
+    std::ifstream ifs(get_words_file_path()); // note no mode needed
     if (!ifs.is_open())
     {
         cout << " Failed to open" << endl;
         return;
     }
 
-    vector<string> wordVector = get_word_vector_from_file(ifs);
+    vector<string> wordVector = get_word_vector_from_file(ifs, length);
 
     // cout << "available words:: " << endl;
     // for (size_t i = 0; i < wordVector.size(); i++)
