@@ -1,5 +1,6 @@
 #include "project/hangman.hpp" // Include your application's header
 #include "gtest/gtest.h"
+#include <iostream>
 #include <string>
 #include <unordered_map>
 
@@ -109,7 +110,75 @@ TEST(GetBestOptionTest, BasicTest)
     expected = {"g__", {"gap", "gas"}};
 
     result = group_words_by_pattern(input, ch, "___");
-    // EXPECT_TRUE(get_best_option_pair(result) == expected);
+    EXPECT_TRUE(get_best_option_pair(result) == expected);
+}
+
+TEST(IsInVectorTest, BasicTest)
+{
+    std::vector<std::string> input = {};
+    std::string ch = "p";
+    EXPECT_FALSE(is_in_vector(input, ch));
+    input = {"p", "i", "a", "z", "l"};
+    ch = "p";
+    EXPECT_TRUE(is_in_vector(input, ch));
+
+    input = {"p", "g", "s"};
+    ch = "i";
+    EXPECT_FALSE(is_in_vector(input, ch));
+}
+
+TEST(MatechesPatternTest, BasicTest)
+{
+    std::vector<std::string> found_letters = {"p"};
+    std::vector<std::string> input = {"paper", "piper", "apple", "pizza",
+                                      "level"};
+    std::string pattern = "p_p__";
+    std::string word = "paper";
+    EXPECT_TRUE(matches_pattern(pattern, word));
+    pattern = "pape_";
+    EXPECT_TRUE(matches_pattern(pattern, word));
+    pattern = "p___";
+    EXPECT_FALSE(matches_pattern(pattern, word));
+
+    pattern = "p_p_";
+    EXPECT_FALSE(matches_pattern(pattern, "pizza"));
+    EXPECT_TRUE(matches_pattern("_____", word));
+
+}
+
+TEST(GetBestGuessTest, BasicTest)
+{
+    std::vector<std::string> guessed_letters = {"p", "q", "g"};
+    std::vector<std::string> input = {"paper", "piper", "apple", "pizza",
+                                      "level"};
+    std::string pattern = "p_p__";
+    std::string word = "paper";
+    std::string result =
+        get_best_guess(input, guessed_letters, pattern);
+    EXPECT_TRUE(result == "a");
+    pattern = "pap__";
+    guessed_letters = {"p", "q", "g", "a"};
+    result = get_best_guess(input, guessed_letters, pattern);
+    EXPECT_TRUE(result == "e");
+
+    pattern = "pape_";
+    guessed_letters = {"p", "q", "g", "a", "e"};
+    result = get_best_guess(input, guessed_letters, pattern);
+    EXPECT_TRUE(result == "r");
+}
+
+TEST(UpdateWordVectorTest, BasicTest)
+{
+    std::vector<std::string> found_letters = {"p"};
+    std::vector<std::string> guessed_letters = {"p", "q", "g"};
+    std::vector<std::string> input = {"paper", "piper", "apple", "pizza",
+                                      "level"};
+    std::string pattern = "p_p__";
+    
+    std::vector<std::string> expected = {"paper", "piper"};
+    std::vector<std::string> result = update_word_vector(input, pattern, guessed_letters);
+    
+    EXPECT_TRUE(result == expected);
 }
 
 // You'll need a main function to run the tests.

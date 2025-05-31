@@ -1,4 +1,5 @@
 #include "project/hangman.hpp"
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -119,7 +120,8 @@ std::filesystem::path get_words_file_path()
     return get_executable_parent_path().append("/words.txt");
 }
 
-std::vector<std::string> get_word_vector_from_file(std::ifstream& fs, size_t length)
+std::vector<std::string> get_word_vector_from_file(std::ifstream& fs,
+                                                   size_t length)
 {
     // Creating a vector of strings
     std::vector<std::string> wordVector;
@@ -128,7 +130,8 @@ std::vector<std::string> get_word_vector_from_file(std::ifstream& fs, size_t len
     while (std::getline(fs, line))
     {
         std::istringstream ss(line);
-        if (length == line.size()) wordVector.push_back(line);
+        if (length == line.size())
+            wordVector.push_back(line);
     }
     return wordVector;
 }
@@ -168,7 +171,8 @@ group_words_by_pattern(const std::vector<std::string>& wordVector, char ch,
 }
 
 std::pair<std::string, std::vector<std::string>> get_best_option_pair(
-    const std::unordered_map<std::string, std::vector<std::string>> &pattern_map)
+    const std::unordered_map<std::string, std::vector<std::string>>&
+        pattern_map)
 {
     std::pair<std::string, std::vector<std::string>> best_option =
         *(pattern_map.begin());
@@ -182,4 +186,76 @@ std::pair<std::string, std::vector<std::string>> get_best_option_pair(
         }
     }
     return best_option;
+}
+
+bool is_in_vector(std::vector<std::string>& vectr, std::string ch)
+{
+    for (auto i : vectr)
+    {
+
+        // If the target element found set the
+        // flag value 1 and break
+        if (i == ch)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool matches_pattern(std::string pattern, std::string word)
+{
+    for (size_t i = 0; i < word.size(); i++)
+    {
+        /* code */
+        if ((pattern[i] != '_') && (word[i] != pattern[i]))
+        {
+            /* code */
+            return false;
+        }
+        
+    }
+    return true;
+}
+
+std::string get_best_guess(std::vector<std::string>& wordVector,
+                           std::vector<std::string>& guessed_letters,
+                           std::string& pattern)
+{
+    for (size_t i = 0; i < wordVector.size(); i++)
+    {
+        /* code */
+        std::string word = wordVector[i];
+        if (matches_pattern(pattern, word))
+        {
+            for (size_t j = 0; j < word.size(); j++)
+            {
+                /* code */
+                std::string letter = std::string(1, word[j]);
+                if (!is_in_vector(guessed_letters, letter))
+                {
+                    /* code */
+                    return letter;
+                }
+            }
+        }
+    }
+    return "";
+}
+
+std::vector<std::string>
+update_word_vector(std::vector<std::string>& wordVector, std::string& pattern,
+                   std::vector<std::string>& guessed_letters)
+{
+    std::vector<std::string> new_word_vector;
+    for (size_t i = 0; i < wordVector.size(); i++)
+    {
+        /* code */
+        std::string word = wordVector[i];
+        if (matches_pattern(pattern, word))
+        {
+            new_word_vector.push_back(word);
+        }
+    }
+    return new_word_vector;
 }
