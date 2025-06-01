@@ -1,15 +1,16 @@
 #include "project/expression_tokenizer.hpp" // Include your application's header
+#include <algorithm>                        // for std::find, std::remove_if
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <algorithm> // for std::find, std::remove_if
 
 using namespace std;
 
 void flush_buffer(vector<char>& buffer, vector<token>& tokens)
 {
     string s(buffer.begin(), buffer.end());
-    if (!s.empty()) {
+    if (!s.empty())
+    {
         token t;
         t.f = stof(s);
         t.number = true;
@@ -23,10 +24,7 @@ bool is_operator(char ch)
     return (ch == '%' || ch == '/' || ch == '*' || ch == '+' || ch == '-');
 }
 
-bool is_parenthesis(char ch)
-{
-    return (ch == '(' || ch == ')');
-}
+bool is_parenthesis(char ch) { return (ch == '(' || ch == ')'); }
 
 /**
  * @brief Tokenize an expression string into a vector of tokens
@@ -45,8 +43,9 @@ vector<token> tokenize_expression(const string& input)
     string sanitized_input = input;
 
     // Remove all whitespaces
-    sanitized_input.erase(remove_if(sanitized_input.begin(), sanitized_input.end(), ::isspace),
-                          sanitized_input.end());
+    sanitized_input.erase(
+        remove_if(sanitized_input.begin(), sanitized_input.end(), ::isspace),
+        sanitized_input.end());
 
     vector<token> result;
     vector<char> digit_buffer;
@@ -62,10 +61,17 @@ vector<token> tokenize_expression(const string& input)
             digit_buffer.push_back(ch);
 
             // Look ahead to collect subsequent digits or a single decimal point
-            while (it + 1 != sanitized_input.end() &&
-                   (isdigit(*(it + 1)) ||
-                    (*(it + 1) == '.' &&
-                     std::find(digit_buffer.begin(), digit_buffer.end(), '.') == digit_buffer.end())))
+            while (
+                // Check if we're not at the end of the string
+                it + 1 != sanitized_input.end() &&
+
+                // Check if the next character is a digit or a decimal point
+                (isdigit(*(it + 1)) || // Next character is a digit
+                 (*(it + 1) == '.' &&  // Next character is a decimal point
+                  std::find(digit_buffer.begin(), digit_buffer.end(), '.') ==
+                      digit_buffer
+                          .end() // And no decimal point has been seen before
+                  )))
             {
                 ++it;
                 ch = *it;
@@ -90,7 +96,8 @@ vector<token> tokenize_expression(const string& input)
             {
                 if (parenthesis_count == 0)
                 {
-                    throw std::invalid_argument("Unmatched closing parenthesis in input");
+                    throw std::invalid_argument(
+                        "Unmatched closing parenthesis in input");
                 }
                 parenthesis_count--;
             }
@@ -101,7 +108,8 @@ vector<token> tokenize_expression(const string& input)
         {
             if (last_was_operator)
             {
-                throw std::invalid_argument("Two consecutive operators in input");
+                throw std::invalid_argument(
+                    "Two consecutive operators in input");
             }
 
             token t;
@@ -113,13 +121,15 @@ vector<token> tokenize_expression(const string& input)
         }
         else
         {
-            throw std::invalid_argument("Invalid character '" + string(1, ch) + "' in input");
+            throw std::invalid_argument("Invalid character '" + string(1, ch) +
+                                        "' in input");
         }
     }
 
     if (parenthesis_count != 0)
     {
-        throw std::invalid_argument("Unbalanced parentheses in input expression");
+        throw std::invalid_argument(
+            "Unbalanced parentheses in input expression");
     }
 
     return result;
