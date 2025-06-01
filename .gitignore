@@ -4,3 +4,4 @@ a.out.dSYM
 .vscode/
 my-dprintf-breakpoints
 my-main-breakpoints
+*/build/
