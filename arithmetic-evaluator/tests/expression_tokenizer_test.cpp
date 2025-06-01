@@ -2,16 +2,6 @@
 #include "gtest/gtest.h"
 
 
-bool operator==(const token& lhs, const token& rhs)
-{
-    return lhs.number == rhs.number &&
-           (lhs.number ? lhs.f == rhs.f : lhs.c == rhs.c);
-}
-
-bool operator!=(const token& lhs, const token& rhs) {
-    return !(lhs == rhs);
-}
-
 // Verifies that the default constructor initializes a token as a non-number
 // with a character value of 0.
 TEST(TokenTests, DefaultConstructorInitializesCorrectly)
