@@ -4,6 +4,8 @@
 
 using namespace std;
 
+bool is_operator(char ch);
+
 struct token
 {
     char c;
