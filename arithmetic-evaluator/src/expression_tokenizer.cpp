@@ -1,5 +1,6 @@
 #include "project/expression_tokenizer.hpp" // Include your application's header
 #include <algorithm>                        // for std::find, std::remove_if
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -130,6 +131,29 @@ vector<token> tokenize_expression(const string& input)
     {
         throw std::invalid_argument(
             "Unbalanced parentheses in input expression");
+    }
+
+    return result;
+}
+
+string token_vector_to_string(const vector<token>& tokens)
+{
+    string result = "";
+    vector<token> reversed_tokens = tokens;
+    reverse(reversed_tokens.begin(), reversed_tokens.end());
+    for (size_t i = 0; i < reversed_tokens.size(); i++)
+    {
+        /* code */
+        if (reversed_tokens[i].number)
+        {
+            stringstream s;
+            s << reversed_tokens[i].f; // appending the float value to the streamclass
+            result += s.str();
+        }
+        else
+        {
+            result.append(1, reversed_tokens[i].c);
+        }
     }
 
     return result;

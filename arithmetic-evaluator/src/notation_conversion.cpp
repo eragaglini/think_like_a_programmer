@@ -5,26 +5,23 @@
 #include <iostream>
 using namespace std;
 
-int get_precedence(token t)
+int get_precedence(char ch)
 {
-    if (t.c == '+' || t.c == '-')
+    if (ch == '+' || ch == '-')
         return 1;
-    else if (t.c == '*' || t.c == '/')
+    else if (ch == '*' || ch == '/')
         return 2;
     else
         return 0;
 }
 
-bool has_higher_priority(token ta, token tb)
+vector<token> infix_to_postfix_helper(vector<token>& tokens, stack<token>& s,
+                                      vector<token>::iterator& it)
 {
-    return get_precedence(ta) >= get_precedence(tb);
-}
-
-vector<token> infix_to_postfix(const vector<token>& tokens)
-{
-    stack<token> s;
     vector<token> postfix_tokens;
-    for (auto it = begin(tokens); it != end(tokens); ++it)
+    vector<token> operators_buffer;
+
+    while (it != end(tokens))
     {
         token t = *it;
 
@@ -34,31 +31,70 @@ vector<token> infix_to_postfix(const vector<token>& tokens)
         }
         else if (is_operator(t.c))
         {
-            token nt = *(++it);
-            s.push(nt);
-            if ((it + 1) == end(tokens))
+            int precedence = get_precedence(t.c);
+            // int last_operator_precedence =
+            //     get_precedence(operators_buffer.back().c);
+            // int first_operator_precedence =
+            //     get_precedence(operators_buffer[0].c);
+
+            if (operators_buffer.empty())
             {
-                s.push(t);
-                break;
+                operators_buffer.push_back(t);
             }
-            else if (!has_higher_priority(t, *(it + 1)))
+            else if (get_precedence(operators_buffer[0].c) == precedence)
             {
-                vector<token> rest = std::vector<token>(it + 1, tokens.end());
-                rest = infix_to_postfix(rest);
-                for (auto it = rest.rbegin(); it != rest.rend(); ++it)
+                s.push(operators_buffer[0]);
+                operators_buffer[0] = t;
+            }
+            else if (precedence <= get_precedence(operators_buffer.back().c))
+            {
+                // cout << "riga 51 operator: " << t.c << endl;
+                for (size_t i = 0; i < operators_buffer.size(); i++)
                 {
-                    s.push(*it);
+                    /* code */
+                    s.push(operators_buffer[i]);
                 }
-                s.push(t);
-                break;
+                operators_buffer.clear();
+                operators_buffer.push_back(t);
+                
             }
-            s.push(t);
+            else
+            {
+                // cout << "operator: " << t.c << endl;
+
+                auto pos = std::find_if(operators_buffer.begin(),
+                                        operators_buffer.end(),
+                                        [t](auto s) { return s < t; });
+                operators_buffer.insert(pos, t);
+            }
+
+            // cout << "Operators: [";
+            // for (size_t i = 0; i < operators_buffer.size(); i++)
+            // {
+            //     /* code */
+            //     cout << operators_buffer[i].c << ", ";
+            // }
+            // cout << "]" << endl;
         }
+        ++it;
     }
+    for (auto it = operators_buffer.begin(); it != operators_buffer.end(); ++it)
+    {
+        // cout << "operatore: " << it->c << " pushato sullo stack" << endl;
+        s.push(*it);
+    }
+
     while (!s.empty())
     {
         postfix_tokens.push_back(s.top());
         s.pop();
     }
     return postfix_tokens;
+}
+
+vector<token> infix_to_postfix(vector<token>& tokens)
+{
+    stack<token> s;
+    vector<token>::iterator it = begin(tokens);
+    return infix_to_postfix_helper(tokens, s, it);
 }

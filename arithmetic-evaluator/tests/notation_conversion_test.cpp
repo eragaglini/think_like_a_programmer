@@ -2,102 +2,50 @@
 #include "gtest/gtest.h"
 
 
-// TEST(InfixToPostfixTest, SimpleExpression)
-// {
-//     std::vector<token> infix;
-//     infix.push_back(token('2', true, 2));
-//     infix.push_back(token('*', false, 0));
-//     infix.push_back(token('3', true, 3));
+TEST(InfixToPostfixTest, SimpleExpression) {
+  std::vector<token> infix = tokenize_expression("6+3*2/4-156+3*2/4-15");
+  std::string expected_postfix = "632*4/+156-32*4/+15-";
+  std::string actual_postfix = token_vector_to_string(infix_to_postfix(infix));
+  EXPECT_EQ(expected_postfix, actual_postfix);
+}
 
-//     std::vector<token> expected_postfix;
-//     expected_postfix.push_back(token('*', false, 0));
-//     expected_postfix.push_back(token('3', true, 3));
-//     expected_postfix.push_back(token('2', true, 2));
+TEST(InfixToPostfixTest, NoOperators) {
+  std::vector<token> infix = tokenize_expression("123");
+  std::string expected_postfix = "123";
+  std::string actual_postfix = token_vector_to_string(infix_to_postfix(infix));
+  EXPECT_EQ(expected_postfix, actual_postfix);
+}
 
-//     std::vector<token> postfix = infix_to_postfix(infix);
-//     EXPECT_EQ(postfix, expected_postfix);
+TEST(InfixToPostfixTest, SingleOperator) {
+  std::vector<token> infix = tokenize_expression("2+3");
+  std::string expected_postfix = "23+";
+  std::string actual_postfix = token_vector_to_string(infix_to_postfix(infix));
+  EXPECT_EQ(expected_postfix, actual_postfix);
+}
+
+TEST(InfixToPostfixTest, MultipleOperators) {
+  std::vector<token> infix = tokenize_expression("2+3*4-5");
+  std::string expected_postfix = "234*+5-";
+  std::string actual_postfix = token_vector_to_string(infix_to_postfix(infix));
+  EXPECT_EQ(expected_postfix, actual_postfix);
+}
+
+// TEST(InfixToPostfixTest, Parentheses) {
+//   std::vector<token> infix = tokenize_expression("(2+3)*4-5");
+//   std::string expected_postfix = "23+4*5-";
+//   std::string actual_postfix = token_vector_to_string(infix_to_postfix(infix));
+//   EXPECT_EQ(expected_postfix, actual_postfix);
 // }
 
-// TEST(InfixToPostfixTest, SingleNumber)
-// {
-//     std::vector<token> infix;
-//     infix.push_back(token('5', true, 5));
 
-//     std::vector<token> expected_postfix;
-//     expected_postfix.push_back(token('5', true, 5));
+TEST(InfixToPostfixTest, SingleNumber)
+{
+    std::vector<token> infix;
+    infix.push_back(token('5', true, 5));
 
-//     std::vector<token> postfix = infix_to_postfix(infix);
-//     EXPECT_EQ(postfix, expected_postfix);
-// }
+    std::vector<token> expected_postfix;
+    expected_postfix.push_back(token('5', true, 5));
 
-// // TEST(InfixToPostfixTest, SingleOperator)
-// // {
-// //     std::vector<token> infix;
-// //     infix.push_back(token('+', false, 0));
-
-// //     std::vector<token> expected_postfix;
-// //     expected_postfix.push_back(token('+', false, 0));
-
-// //     std::vector<token> postfix = infix_to_postfix(infix);
-// //     EXPECT_EQ(postfix, expected_postfix);
-// // }
-
-// TEST(InfixToPostfixTest, MultipleOperators)
-// {
-//     std::vector<token> infix;
-//     infix.push_back(token('2', true, 2));
-//     infix.push_back(token('+', false, 0));
-//     infix.push_back(token('3', true, 3));
-//     infix.push_back(token('*', false, 0));
-//     infix.push_back(token('4', true, 4));
-
-//     std::vector<token> expected_postfix;
-//     expected_postfix.push_back(token('2', true, 2));
-//     expected_postfix.push_back(token('3', true, 3));
-//     expected_postfix.push_back(token('4', true, 4));
-//     expected_postfix.push_back(token('*', false, 0));
-//     expected_postfix.push_back(token('+', false, 0));
-
-//     std::vector<token> postfix = infix_to_postfix(infix);
-
-//     // Check that the numbers are in the correct order
-//     EXPECT_EQ(postfix[0].f, 2);
-//     EXPECT_EQ(postfix[1].f, 3);
-//     EXPECT_EQ(postfix[2].f, 4);
-
-//     // Check that the operators are in the correct order
-//     EXPECT_EQ(postfix[3].c, '*');
-//     EXPECT_EQ(postfix[4].c, '+');
-// }
-
-// TEST(InfixToPostfixTest, Division)
-// {
-//     std::vector<token> infix;
-//     infix.push_back(token('6', true, 6));
-//     infix.push_back(token('/', false, 0));
-//     infix.push_back(token('2', true, 2));
-
-//     std::vector<token> expected_postfix;
-//     expected_postfix.push_back(token('6', true, 6));
-//     expected_postfix.push_back(token('2', true, 2));
-//     expected_postfix.push_back(token('/', false, 0));
-
-//     std::vector<token> postfix = infix_to_postfix(infix);
-//     EXPECT_EQ(postfix, expected_postfix);
-// }
-
-// TEST(InfixToPostfixTest, Multiplication)
-// {
-//     std::vector<token> infix;
-//     infix.push_back(token('7', true, 7));
-//     infix.push_back(token('*', false, 0));
-//     infix.push_back(token('3', true, 3));
-
-//     std::vector<token> expected_postfix;
-//     expected_postfix.push_back(token('7', true, 7));
-//     expected_postfix.push_back(token('3', true, 3));
-//     expected_postfix.push_back(token('*', false, 0));
-
-//     std::vector<token> postfix = infix_to_postfix(infix);
-//     EXPECT_EQ(postfix, expected_postfix);
-// }
+    std::vector<token> postfix = infix_to_postfix(infix);
+    EXPECT_EQ(postfix, expected_postfix);
+}

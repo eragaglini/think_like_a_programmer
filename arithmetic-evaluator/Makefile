@@ -1,4 +1,5 @@
-CXX ?= g++
+#CXX ?= g++
+CXX = g++
 
 # path #
 SRC_PATH = src
@@ -114,8 +115,8 @@ $(APP_MAIN_OBJECT): $(APP_MAIN_SOURCE)
 # Source file rules for application (other .cpp files)
 $(BUILD_PATH)/%.o: $(SRC_PATH)/%.$(SRC_EXT)
 	@echo "Compiling: $< -> $@"
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -MP -MMD -c $< -o $@
-
+	$(CXX) $(CXXFLAGS) $(COMPILE_FLAGS) $(INCLUDES) -MP -MMD -c $< -o $@
+	
 # Source file rules for tests
 $(TEST_BUILD_PATH)/%.o: $(TEST_PATH)/%.$(SRC_EXT)
 	@echo "Compiling test: $< -> $@"
