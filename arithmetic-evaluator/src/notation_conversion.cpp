@@ -52,7 +52,6 @@ void infix_to_postfix_helper(vector<token>& tokens, stack<token>& s,
             {
                 int index = 0;
                 index = find_starting_point(operators_buffer);
-                cout << "starting point: " << index << endl;
                 if (get_precedence(operators_buffer[index].c) == precedence)
                 {
                     s.push(operators_buffer[index]);
@@ -101,13 +100,6 @@ void infix_to_postfix_helper(vector<token>& tokens, stack<token>& s,
             operators_buffer.pop_back();
         }
 
-        cout << "Operators: [";
-        for (size_t i = 0; i < operators_buffer.size(); i++)
-        {
-            /* code */
-            cout << operators_buffer[i].c << ", ";
-        }
-        cout << "]" << endl;
         ++it;
     }
 
