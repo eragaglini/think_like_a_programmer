@@ -6,6 +6,12 @@
 
 using namespace std;
 
+/**
+ * Tokenize an arithmetic expression into a vector of tokens.
+ *
+ * @param input Arithmetic expression string to tokenize.
+ * @return Vector of tokens representing the expression.
+ */
 std::vector<token> tokenize_expression(const std::string& input)
 {
     std::vector<token> tokens;
@@ -15,9 +21,9 @@ std::vector<token> tokenize_expression(const std::string& input)
     {
         char ch = input[i];
 
+        // Ignore whitespace
         if (std::isspace(ch))
         {
-            // Ignore whitespace
             continue;
         }
 
@@ -126,24 +132,48 @@ std::vector<token> tokenize_expression(const std::string& input)
     return tokens;
 }
 
+/**
+ * Converts a single token to a string. The string is created by appending
+ * the string representation of the token to a stringstream.
+ * The string representation of a token is either the number value as a string
+ * if the token is a number, or the character value as a single character string
+ * if the token is a character token.
+ * 
+ * @param t The token to convert to a string.
+ * @return The string representation of the token.
+ */
 std::string token_to_string(const token& t) {
     return t.number ? std::to_string(t.f) : std::string(1, t.c);
 }
 
+/**
+ * Converts a vector of tokens to a string. The string is created by appending
+ * the string representation of each token in the vector to a stringstream.
+ * The string representation of a token is either the number value as a string
+ * if the token is a number, or the character value as a single character string
+ * if the token is a character token.
+ * 
+ * @param tokens The vector of tokens to convert to a string.
+ * @return The string representation of the vector of tokens.
+ */
 string token_vector_to_string(const vector<token>& tokens)
 {
     stringstream ss;
+    // Iterate over each token in the vector
     for (const auto& token : tokens)
     {
+        // If the token is a number, append its number value as a string to the stringstream
         if (token.number)
         {
             ss << token.f;
         }
+        // If the token is a character token, append its character value as a single character string to the stringstream
         else
         {
             ss << token.c;
         }
     }
 
+    // Return the string representation of the vector of tokens
     return ss.str();
 }
