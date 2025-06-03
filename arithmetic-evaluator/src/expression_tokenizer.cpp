@@ -1,160 +1,149 @@
 #include "project/expression_tokenizer.hpp" // Include your application's header
-#include <algorithm>                        // for std::find, std::remove_if
+#include <iostream>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
 using namespace std;
 
-void flush_buffer(vector<char>& buffer, vector<token>& tokens)
+std::vector<token> tokenize_expression(const std::string& input)
 {
-    string s(buffer.begin(), buffer.end());
-    if (!s.empty())
+    std::vector<token> tokens;
+    std::string current_number_str;
+
+    for (size_t i = 0; i < input.length(); ++i)
     {
-        token t;
-        t.f = stof(s);
-        t.number = true;
-        tokens.push_back(t);
-    }
-    buffer.clear();
-}
+        char ch = input[i];
 
-bool is_operator(char ch)
-{
-    return (ch == '%' || ch == '/' || ch == '*' || ch == '+' || ch == '-');
-}
-
-bool is_parenthesis(char ch) { return (ch == '(' || ch == ')'); }
-
-/**
- * @brief Tokenize an expression string into a vector of tokens
- *
- * This function takes a string expression and breaks it down into a vector of
- * tokens. Tokens are either numbers or operators. The function handles decimal
- * points and parentheses.
- *
- * @param input The input expression as a string
- * @return A vector of tokens representing the input expression
- * @throws std::invalid_argument if the input expression is invalid
- */
-vector<token> tokenize_expression(const string& input)
-{
-    // Work on a copy to avoid modifying the original input
-    string sanitized_input = input;
-
-    // Remove all whitespaces
-    sanitized_input.erase(
-        remove_if(sanitized_input.begin(), sanitized_input.end(), ::isspace),
-        sanitized_input.end());
-
-    vector<token> result;
-    vector<char> digit_buffer;
-    int parenthesis_count = 0;
-    bool last_was_operator = false;
-
-    for (auto it = sanitized_input.begin(); it != sanitized_input.end(); ++it)
-    {
-        char ch = *it;
-
-        if (isdigit(ch) || ch == '.') // Handle numbers, including decimals
+        if (std::isspace(ch))
         {
-            digit_buffer.push_back(ch);
-
-            // Look ahead to collect subsequent digits or a single decimal point
-            while (
-                // Check if we're not at the end of the string
-                it + 1 != sanitized_input.end() &&
-
-                // Check if the next character is a digit or a decimal point
-                (isdigit(*(it + 1)) || // Next character is a digit
-                 (*(it + 1) == '.' &&  // Next character is a decimal point
-                  std::find(digit_buffer.begin(), digit_buffer.end(), '.') ==
-                      digit_buffer
-                          .end() // And no decimal point has been seen before
-                  )))
-            {
-                ++it;
-                ch = *it;
-                digit_buffer.push_back(ch);
-            }
-
-            flush_buffer(digit_buffer, result);
-            last_was_operator = false;
+            // Ignore whitespace
+            continue;
         }
-        else if (is_parenthesis(ch))
-        {
-            token t;
-            t.c = ch;
-            t.number = false;
-            result.push_back(t);
 
-            if (ch == '(')
+        if (std::isdigit(ch) || ch == '.')
+        {
+            // It's part of a number
+            current_number_str += ch;
+            // Check if it's the last character or the next character is not a
+            // digit/dot
+            if (i == input.length() - 1 ||
+                (!std::isdigit(input[i + 1]) && input[i + 1] != '.'))
             {
-                parenthesis_count++;
-            }
-            else if (ch == ')')
-            {
-                if (parenthesis_count == 0)
+                token num_token;
+                num_token.number = true;
+                try
                 {
-                    throw std::invalid_argument(
-                        "Unmatched closing parenthesis in input");
+                    num_token.f = std::stof(current_number_str);
                 }
-                parenthesis_count--;
+                catch (const std::out_of_range& e)
+                {
+                    // Handle potential overflow/underflow if numbers are
+                    // extremely large/small For simplicity, we'll just set it
+                    // to 0 and log an error or throw
+                    num_token.f = 0.0f;
+                    // In a real application, you might log this error or throw
+                    // a more specific exception.
+                    std::cerr
+                        << "Warning: Number out of range during tokenization: "
+                        << current_number_str << std::endl;
+                }
+                catch (const std::invalid_argument& e)
+                {
+                    // Handle invalid number formats (e.g., "1.2.3")
+                    num_token.f = 0.0f;
+                    std::cerr
+                        << "Error: Invalid number format during tokenization: "
+                        << current_number_str << std::endl;
+                    // You might want to throw an exception here to indicate a
+                    // malformed expression.
+                }
+                tokens.push_back(num_token);
+                current_number_str.clear(); // Reset for the next number
             }
-
-            last_was_operator = false; // Parentheses don’t count as operators
-        }
-        else if (is_operator(ch))
-        {
-            if (last_was_operator)
-            {
-                throw std::invalid_argument(
-                    "Two consecutive operators in input");
-            }
-
-            token t;
-            t.c = ch;
-            t.number = false;
-            result.push_back(t);
-
-            last_was_operator = true;
         }
         else
         {
-            throw std::invalid_argument("Invalid character '" + string(1, ch) +
-                                        "' in input");
+            // It's an operator or parenthesis
+            if (!current_number_str.empty())
+            {
+                // If there was a number being built, add it first
+                token num_token;
+                num_token.number = true;
+                try
+                {
+                    num_token.f = std::stof(current_number_str);
+                }
+                catch (const std::out_of_range& e)
+                {
+                    num_token.f = 0.0f;
+                    std::cerr
+                        << "Warning: Number out of range during tokenization: "
+                        << current_number_str << std::endl;
+                }
+                catch (const std::invalid_argument& e)
+                {
+                    num_token.f = 0.0f;
+                    std::cerr
+                        << "Error: Invalid number format during tokenization: "
+                        << current_number_str << std::endl;
+                }
+                tokens.push_back(num_token);
+                current_number_str.clear();
+            }
+
+            token op_token;
+            op_token.c = ch;
+            op_token.number = false; // It's a character token
+            tokens.push_back(op_token);
         }
     }
 
-    if (parenthesis_count != 0)
+    // After the loop, if there's any remaining number string, add it
+    if (!current_number_str.empty())
     {
-        throw std::invalid_argument(
-            "Unbalanced parentheses in input expression");
+        token num_token;
+        num_token.number = true;
+        try
+        {
+            num_token.f = std::stof(current_number_str);
+        }
+        catch (const std::out_of_range& e)
+        {
+            num_token.f = 0.0f;
+            std::cerr << "Warning: Number out of range during tokenization: "
+                      << current_number_str << std::endl;
+        }
+        catch (const std::invalid_argument& e)
+        {
+            num_token.f = 0.0f;
+            std::cerr << "Error: Invalid number format during tokenization: "
+                      << current_number_str << std::endl;
+        }
+        tokens.push_back(num_token);
     }
 
-    return result;
+    return tokens;
+}
+
+std::string token_to_string(const token& t) {
+    return t.number ? std::to_string(t.f) : std::string(1, t.c);
 }
 
 string token_vector_to_string(const vector<token>& tokens)
 {
-    string result = "";
-    vector<token> reversed_tokens = tokens;
-    reverse(reversed_tokens.begin(), reversed_tokens.end());
-    for (size_t i = 0; i < reversed_tokens.size(); i++)
+    stringstream ss;
+    for (const auto& token : tokens)
     {
-        /* code */
-        if (reversed_tokens[i].number)
+        if (token.number)
         {
-            stringstream s;
-            s << reversed_tokens[i].f; // appending the float value to the streamclass
-            result += s.str();
+            ss << token.f;
         }
         else
         {
-            result.append(1, reversed_tokens[i].c);
+            ss << token.c;
         }
     }
 
-    return result;
+    return ss.str();
 }

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-double do_eval(token op, double first, double second)
+float do_eval(token op, float first, float second)
 {
     char op_code = op.c;
     switch (op_code)
@@ -25,11 +25,9 @@ double do_eval(token op, double first, double second)
     }
 }
 
-double eval_postfix(vector<token> postfix_tokens)
+float eval_postfix(vector<token> postfix_tokens)
 {
-    stack<double> operand_stack;
-    reverse(postfix_tokens.begin(), postfix_tokens.end());
-
+    stack<float> operand_stack;
     for (size_t i = 0; i < postfix_tokens.size(); i++)
     {
         /* code */
@@ -41,10 +39,10 @@ double eval_postfix(vector<token> postfix_tokens)
         }
         else
         {
-            double second = operand_stack.top();
+            float second = operand_stack.top();
             operand_stack.pop();
 
-            double first = operand_stack.top();
+            float first = operand_stack.top();
             operand_stack.pop();
 
             operand_stack.push(do_eval(t, first, second));
