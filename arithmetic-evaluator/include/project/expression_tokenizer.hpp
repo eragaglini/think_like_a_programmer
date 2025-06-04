@@ -9,8 +9,8 @@ struct token
     float f;
     bool number;
 
-    token() : number(false), c(0) {};
-    token(bool number, float f, char c) : number(number), f(f), c(c) {}
+    token() : c(0), number(false) {};
+    token(bool number, float f, char c) : c(c), f(f), number(number) {}
 };
 
 vector<token> tokenize_expression(const string& input);

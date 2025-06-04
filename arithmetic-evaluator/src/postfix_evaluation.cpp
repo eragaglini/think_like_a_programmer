@@ -30,7 +30,14 @@ float do_eval(token op, float first, float second)
             return first * second;
         // Divide the first operand by the second operand
         case '/':
+            if (second == 0) {
+                // Handle division by zero error
+                throw std::runtime_error("Division by zero");
+            }
             return first / second;
+        default:
+            // Handle unknown operator error
+            throw std::runtime_error("Unknown operator");
     }
 }
 
