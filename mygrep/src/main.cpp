@@ -4,6 +4,7 @@
 #include <iostream>   // For std::cout, std::cerr
 #include <string>     // For std::string
 #include <unistd.h>   // For getopt, optarg, optind, opterr, optopt
+#include <utility>    // for std::pair
 #include <vector>     // For std::vector
 
 #include "project/my_grep.hpp" // Assumed to contain grep_lines function
@@ -17,12 +18,13 @@ int main(int argc, char* argv[])
     bool r_flag = false; // Recursive search
     bool v_flag = false; // Invert match (not implemented in this example)
     bool i_flag = false; // Case-insensitive (not implemented in this example)
+    bool n_flag = false; // Line number
 
     opterr = 0; // Disable getopt's default error messages
 
     // --- 2. Parse command-line options using getopt ---
     int c;
-    while ((c = getopt(argc, argv, "rvi:")) !=
+    while ((c = getopt(argc, argv, "rvni:")) !=
            -1) // -i expects an argument, but your logic treats it as a flag
                // Changed to "rvi:" if 'i' is a flag, or "rv:i:" if 'v' also
                // took an arg
@@ -34,6 +36,9 @@ int main(int argc, char* argv[])
                 break;
             case 'v': // This would be the invert match flag
                 v_flag = true;
+                break;
+            case 'n':
+                n_flag = true;
                 break;
             case 'i': // This would be the case-insensitive flag
                 i_flag = true;
@@ -95,14 +100,15 @@ int main(int argc, char* argv[])
     }
 
     // --- 4. Store all found matches ---
-    std::vector<std::string>
-        all_matches; // Use a distinct name to avoid confusion with `matches`
-                     // inside loops
+    // std::vector<std::string>
+    //     all_matches;
+    std::vector<std::pair<std::string, std::string>> all_matches;
 
     // --- 5. Process each specified path ---
     for (const std::string& current_path_str : paths_to_search)
     {
-        // std::cerr << "Processing argument: " << current_path_str << std::endl;
+        // std::cerr << "Processing argument: " << current_path_str <<
+        // std::endl;
         const fs::path path = fs::path(current_path_str);
         std::error_code ec; // For non-throwing filesystem operations
 
@@ -123,8 +129,8 @@ int main(int argc, char* argv[])
         {
             // std::cerr << "Searching regular file: " << path.string()
             //           << std::endl;
-            std::vector<std::string> file_matches =
-                grep_lines(search_pattern, path);
+            std::vector<std::pair<std::string, std::string>> file_matches =
+                grep_lines(search_pattern, path, n_flag);
             all_matches.insert(all_matches.end(), file_matches.begin(),
                                file_matches.end());
 
@@ -167,7 +173,8 @@ int main(int argc, char* argv[])
                         continue;
                     }
 
-                    // std::cerr << "  Inside: " << dir_entry.path() << std::endl;
+                    // std::cerr << "  Inside: " << dir_entry.path() <<
+                    // std::endl;
                     if (fs::is_regular_file(
                             dir_entry
                                 .path())) // Must use .path() for file_status
@@ -175,8 +182,9 @@ int main(int argc, char* argv[])
                     {
                         // std::cerr << "    Searching file in recursion: "
                         //           << dir_entry.path().string() << std::endl;
-                        std::vector<std::string> file_matches =
-                            grep_lines(search_pattern, dir_entry.path());
+                        std::vector<std::pair<std::string, std::string>>
+                            file_matches =
+                                grep_lines(search_pattern, dir_entry.path(), n_flag);
                         all_matches.insert(all_matches.end(),
                                            file_matches.begin(),
                                            file_matches.end());
@@ -185,9 +193,9 @@ int main(int argc, char* argv[])
                         // recursion
                         // if (!file_matches.empty())
                         // {
-                                // std::cerr << "      Matches found in "
-                                //       << dir_entry.path().string() << ":"
-                                //       << std::endl;
+                        // std::cerr << "      Matches found in "
+                        //       << dir_entry.path().string() << ":"
+                        //       << std::endl;
                         //     for (const std::string& m : file_matches)
                         //     {
                         //         std::cerr << "        " << m << std::endl;
@@ -213,9 +221,12 @@ int main(int argc, char* argv[])
     }
 
     // --- 6. Print all collected matches to standard output ---
-    for (const std::string& match_line : all_matches)
+    for (const std::pair<std::string, std::string>& match_line : all_matches)
     {
-        std::cout << match_line << std::endl;
+        if (!r_flag)
+            std::cout << match_line.second << std::endl;
+        else
+            std::cout << match_line.first << match_line.second << std::endl;
     }
 
     // --- 7. Return appropriate exit code ---
