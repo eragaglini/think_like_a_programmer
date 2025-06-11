@@ -94,15 +94,13 @@ int main(int argc, char* argv[])
 
     // If no paths are specified (e.g., ./mygrep -r pattern), default to current
     // directory
-    if (paths_to_search.empty())
+    if (paths_to_search.empty() && (!std::cin || r_flag))
     {
         paths_to_search.push_back(".");
     }
 
     // --- 4. Store all found matches ---
-    // std::vector<std::string>
-    //     all_matches;
-    std::vector<std::pair<std::string, std::string>> all_matches;
+    std::vector<std::string> all_matches;
 
     // --- 5. Process each specified path ---
     for (const std::string& current_path_str : paths_to_search)
@@ -129,8 +127,8 @@ int main(int argc, char* argv[])
         {
             // std::cerr << "Searching regular file: " << path.string()
             //           << std::endl;
-            std::vector<std::pair<std::string, std::string>> file_matches =
-                grep_lines(search_pattern, path, n_flag);
+            std::vector<std::string> file_matches =
+                grep_lines(search_pattern, path, n_flag, r_flag, v_flag);
             all_matches.insert(all_matches.end(), file_matches.begin(),
                                file_matches.end());
 
@@ -182,9 +180,9 @@ int main(int argc, char* argv[])
                     {
                         // std::cerr << "    Searching file in recursion: "
                         //           << dir_entry.path().string() << std::endl;
-                        std::vector<std::pair<std::string, std::string>>
-                            file_matches =
-                                grep_lines(search_pattern, dir_entry.path(), n_flag);
+                        std::vector<std::string> file_matches =
+                            grep_lines(search_pattern, dir_entry.path(), n_flag,
+                                       r_flag, v_flag);
                         all_matches.insert(all_matches.end(),
                                            file_matches.begin(),
                                            file_matches.end());
@@ -220,16 +218,29 @@ int main(int argc, char* argv[])
         }
     }
 
-    // --- 6. Print all collected matches to standard output ---
-    for (const std::pair<std::string, std::string>& match_line : all_matches)
+    // -- 6. Process data read from standard input ----
+    if (paths_to_search.empty())
     {
-        if (!r_flag)
-            std::cout << match_line.second << std::endl;
-        else
-            std::cout << match_line.first << match_line.second << std::endl;
+        std::string line_input;
+        int line_num = 1;
+        while (std::getline(std::cin, line_input))
+        {
+            if (matches_pattern(line_input, search_pattern))
+            {
+                all_matches.push_back(
+                    get_line_to_print(line_input, n_flag, r_flag, line_num));
+            }
+            line_num++;
+        }
     }
 
-    // --- 7. Return appropriate exit code ---
+    // --- 7. Print all collected matches to standard output ---
+    for (const std::string& match_line : all_matches)
+    {
+        std::cout << match_line << std::endl;
+    }
+
+    // --- 8. Return appropriate exit code ---
     // Return 0 if at least one match was found, 1 if no matches were found.
     return (all_matches.empty() ? 1 : 0);
 }
