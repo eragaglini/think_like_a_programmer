@@ -5,3 +5,4 @@ a.out.dSYM
 my-dprintf-breakpoints
 my-main-breakpoints
 */build/
+.DS_Store
