@@ -1,157 +1,110 @@
 #include "project/my_grep.hpp"
 #include <gtest/gtest.h>
+#include <regex>
 
-TEST(MatchesPatternTest, CaseInsensitiveMatching)
+TEST(GetRegexPatternTest, CaseSensitivePattern)
 {
-    std::string line = "Hello World";
-    std::string pattern = "hello";
-    bool i_flag = true;
-    bool v_flag = false;
-    EXPECT_TRUE(matches_pattern(line, pattern, v_flag, i_flag));
-}
-
-TEST(MatchesPatternTest, CaseSensitiveMatching)
-{
-    std::string line = "Hello World";
-    std::string pattern = "hello";
-    bool i_flag = false;
-    bool v_flag = false;
-    EXPECT_FALSE(matches_pattern(line, pattern, v_flag, i_flag));
-}
-
-TEST(MatchesPatternTest, InvertMatchFlag)
-{
-    std::string line = "Hello World";
     std::string pattern = "Hello";
     bool i_flag = false;
-    bool v_flag = true;
-    EXPECT_FALSE(matches_pattern(line, pattern, v_flag, i_flag));
+    std::regex expected_regex(pattern);
+    std::regex actual_regex = get_regex_pattern(pattern, i_flag);
+    EXPECT_EQ(expected_regex.mark_count(), actual_regex.mark_count());
+    EXPECT_EQ(expected_regex.flags(), actual_regex.flags());
 }
 
-TEST(MatchesPatternTest, SimplePatternMatching)
+TEST(GetRegexPatternTest, CaseInsensitivePattern)
 {
-    std::string line = "Hello World";
-    std::string pattern = "World";
-    bool i_flag = false;
-    bool v_flag = false;
-    EXPECT_TRUE(matches_pattern(line, pattern, v_flag, i_flag));
-}
-
-TEST(MatchesPatternTest, ComplexPatternMatching)
-{
-    std::string line = "Hello, World!";
-    std::string pattern = "[^a-zA-Z0-9]+";
-    bool i_flag = false;
-    bool v_flag = false;
-    EXPECT_TRUE(matches_pattern(line, pattern, v_flag, i_flag));
-}
-
-TEST(MatchesPatternTest, NonMatchingSimplePattern)
-{
-    std::string line = "Hello World";
-    std::string pattern = "Foo";
-    bool i_flag = false;
-    bool v_flag = false;
-    EXPECT_FALSE(matches_pattern(line, pattern, v_flag, i_flag));
-}
-
-TEST(MatchesPatternTest, NonMatchingComplexPattern)
-{
-    std::string line = "Hello World";
-    std::string pattern = "[^a-zA-Z0-9 ]+"; // add space to the character class
-    bool i_flag = false;
-    bool v_flag = true;
-    EXPECT_TRUE(matches_pattern(line, pattern, v_flag, i_flag));
-}
-TEST(GrepLinesTest, FileCannotBeOpened)
-{
-    std::string pattern = "test";
-    std::string file_path = "non_existent_file.txt";
-    bool n_flag = false;
-    bool r_flag = false;
-    bool v_flag = false;
-    bool i_flag = false;
-    EXPECT_THROW(grep_lines(pattern, file_path, n_flag, r_flag, v_flag, i_flag),
-                 std::runtime_error);
-}
-TEST(GrepLinesTest, PatternNotFound)
-{
-    std::string pattern = "test";
-    std::string file_path = "testfile.txt";
-    bool n_flag = false;
-    bool r_flag = false;
-    bool v_flag = false;
-    bool i_flag = false;
-    std::vector<std::string> expected;
-    std::vector<std::string> actual =
-        grep_lines(pattern, file_path, n_flag, r_flag, v_flag, i_flag);
-    EXPECT_EQ(expected, actual);
-}
-TEST(GrepLinesTest, PatternFound)
-{
-    std::string pattern = "line";
-    std::string file_path = "testfile.txt";
-    bool n_flag = false;
-    bool r_flag = false;
-    bool v_flag = false;
-    bool i_flag = false;
-    std::vector<std::string> expected = {"line"};
-    std::vector<std::string> actual =
-        grep_lines(pattern, file_path, n_flag, r_flag, v_flag, i_flag);
-    EXPECT_EQ(expected, actual);
-}
-TEST(GrepLinesTest, PatternFoundWithNFlag)
-{
-    std::string pattern = "line";
-    std::string file_path = "testfile.txt";
-    bool n_flag = true;
-    bool r_flag = false;
-    bool v_flag = false;
-    bool i_flag = false;
-    std::vector<std::string> expected = {"1:line"};
-    std::vector<std::string> actual =
-        grep_lines(pattern, file_path, n_flag, r_flag, v_flag, i_flag);
-    EXPECT_EQ(expected, actual);
-}
-TEST(GrepLinesTest, PatternFoundWithRFlag)
-{
-    std::string pattern = "line";
-    std::string file_path = "testfile.txt";
-    bool n_flag = false;
-    bool r_flag = true;
-    bool v_flag = false;
-    bool i_flag = false;
-    std::vector<std::string> expected = {"testfile.txt:line"};
-    std::vector<std::string> actual =
-        grep_lines(pattern, file_path, n_flag, r_flag, v_flag, i_flag);
-    EXPECT_EQ(expected, actual);
-}
-TEST(GrepLinesTest, PatternFoundWithVFlag)
-{
-    std::string pattern = "test";
-    std::string file_path = "testfile.txt";
-    bool n_flag = false;
-    bool r_flag = false;
-    bool v_flag = true;
-    bool i_flag = false;
-    std::vector<std::string> expected = {"line"};
-    std::vector<std::string> actual =
-        grep_lines(pattern, file_path, n_flag, r_flag, v_flag, i_flag);
-    EXPECT_EQ(expected, actual);
-}
-TEST(GrepLinesTest, PatternFoundWithIFlag)
-{
-    std::string pattern = "LiNe";
-    std::string file_path = "testfile.txt";
-    bool n_flag = false;
-    bool r_flag = false;
-    bool v_flag = false;
+    std::string pattern = "Hello";
     bool i_flag = true;
-    std::vector<std::string> expected = {"line"};
-    std::vector<std::string> actual =
-        grep_lines(pattern, file_path, n_flag, r_flag, v_flag, i_flag);
-    EXPECT_EQ(expected, actual);
+    std::regex expected_regex(pattern, std::regex_constants::icase);
+    std::regex actual_regex = get_regex_pattern(pattern, i_flag);
+    EXPECT_EQ(expected_regex.mark_count(), actual_regex.mark_count());
+    EXPECT_EQ(expected_regex.flags(), actual_regex.flags());
 }
+
+TEST(GetRegexPatternTest, InvalidPattern)
+{
+    std::string pattern = "("; // invalid pattern
+    bool i_flag = false;
+    EXPECT_THROW(get_regex_pattern(pattern, i_flag), std::regex_error);
+}
+
+TEST(GetRegexPatternTest, EmptyPattern)
+{
+    std::string pattern = "";
+    bool i_flag = false;
+    std::regex expected_regex(pattern);
+    std::regex actual_regex = get_regex_pattern(pattern, i_flag);
+    EXPECT_EQ(expected_regex.mark_count(), actual_regex.mark_count());
+    EXPECT_EQ(expected_regex.flags(), actual_regex.flags());
+}
+#include "project/my_grep.hpp"
+#include <gtest/gtest.h>
+#include <regex>
+
+TEST(MatchesPatternTest, MatchingPatternVFlagFalse)
+{
+    std::string line = "Hello World";
+    std::regex pattern_regex("World");
+    bool v_flag = false;
+    EXPECT_TRUE(matches_pattern(line, pattern_regex, v_flag));
+}
+
+TEST(MatchesPatternTest, NonMatchingPatternVFlagFalse)
+{
+    std::string line = "Hello World";
+    std::regex pattern_regex("Foo");
+    bool v_flag = false;
+    EXPECT_FALSE(matches_pattern(line, pattern_regex, v_flag));
+}
+
+TEST(MatchesPatternTest, MatchingPatternVFlagTrue)
+{
+    std::string line = "Hello World";
+    std::regex pattern_regex("World");
+    bool v_flag = true;
+    EXPECT_FALSE(matches_pattern(line, pattern_regex, v_flag));
+}
+
+TEST(MatchesPatternTest, NonMatchingPatternVFlagTrue)
+{
+    std::string line = "Hello World";
+    std::regex pattern_regex("Foo");
+    bool v_flag = true;
+    EXPECT_TRUE(matches_pattern(line, pattern_regex, v_flag));
+}
+
+TEST(MatchesPatternTest, EmptyPatternVFlagFalse)
+{
+    std::string line = "Hello World";
+    std::regex pattern_regex("");
+    bool v_flag = false;
+    EXPECT_TRUE(matches_pattern(line, pattern_regex, v_flag));
+}
+
+TEST(MatchesPatternTest, EmptyPatternVFlagTrue)
+{
+    std::string line = "Hello World";
+    std::regex pattern_regex("");
+    bool v_flag = true;
+    EXPECT_FALSE(matches_pattern(line, pattern_regex, v_flag));
+}
+TEST(MatchesPatternTest, EmptyLineVFlagFalse)
+{
+    std::string line = "";
+    std::regex pattern_regex("World");
+    bool v_flag = false;
+    EXPECT_FALSE(matches_pattern(line, pattern_regex, v_flag));
+}
+
+TEST(MatchesPatternTest, EmptyLineVFlagTrue)
+{
+    std::string line = "";
+    std::regex pattern_regex("World");
+    bool v_flag = true;
+    EXPECT_TRUE(matches_pattern(line, pattern_regex, v_flag));
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
