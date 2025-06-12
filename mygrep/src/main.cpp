@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 
     // --- 2. Parse command-line options using getopt ---
     int c;
-    while ((c = getopt(argc, argv, "rvni:")) !=
+    while ((c = getopt(argc, argv, "rvni")) !=
            -1) // -i expects an argument, but your logic treats it as a flag
                // Changed to "rvi:" if 'i' is a flag, or "rv:i:" if 'v' also
                // took an arg
@@ -40,11 +40,8 @@ int main(int argc, char* argv[])
             case 'n':
                 n_flag = true;
                 break;
-            case 'i': // This would be the case-insensitive flag
+            case 'i':
                 i_flag = true;
-                // If -i is meant to take a value (e.g., a path to an ignore
-                // list), you would use optarg here: std::string ignore_file =
-                // optarg;
                 break;
             case '?':
                 if (isprint(optopt))
@@ -105,8 +102,6 @@ int main(int argc, char* argv[])
     // --- 5. Process each specified path ---
     for (const std::string& current_path_str : paths_to_search)
     {
-        // std::cerr << "Processing argument: " << current_path_str <<
-        // std::endl;
         const fs::path path = fs::path(current_path_str);
         std::error_code ec; // For non-throwing filesystem operations
 
@@ -125,23 +120,10 @@ int main(int argc, char* argv[])
 
         if (fs::is_regular_file(status))
         {
-            // std::cerr << "Searching regular file: " << path.string()
-            //           << std::endl;
             std::vector<std::string> file_matches =
-                grep_lines(search_pattern, path, n_flag, r_flag, v_flag);
+                grep_lines(search_pattern, path, n_flag, r_flag, v_flag, i_flag);
             all_matches.insert(all_matches.end(), file_matches.begin(),
                                file_matches.end());
-
-            // Debugging: Print matches found for this file
-            // if (!file_matches.empty())
-            // {
-            //     std::cerr << "  Matches found in " << path.string() << ":"
-            //               << std::endl;
-            //     for (const std::string& m : file_matches)
-            //     {
-            //         std::cerr << "    " << m << std::endl;
-            //     }
-            // }
         }
         else if (fs::is_directory(status))
         {
@@ -153,10 +135,6 @@ int main(int argc, char* argv[])
             }
             else
             {
-                // std::cerr << "Recursively searching directory: "
-                //           << path.string() << std::endl;
-                // Use std::filesystem::recursive_directory_iterator for
-                // recursive search
                 for (const auto& dir_entry :
                      fs::recursive_directory_iterator(path, ec))
                 {
@@ -170,19 +148,14 @@ int main(int argc, char* argv[])
                         ec.clear(); // Clear error for next iteration
                         continue;
                     }
-
-                    // std::cerr << "  Inside: " << dir_entry.path() <<
-                    // std::endl;
                     if (fs::is_regular_file(
                             dir_entry
                                 .path())) // Must use .path() for file_status
                                           // and is_regular_file
                     {
-                        // std::cerr << "    Searching file in recursion: "
-                        //           << dir_entry.path().string() << std::endl;
                         std::vector<std::string> file_matches =
                             grep_lines(search_pattern, dir_entry.path(), n_flag,
-                                       r_flag, v_flag);
+                                       r_flag, v_flag, i_flag);
                         all_matches.insert(all_matches.end(),
                                            file_matches.begin(),
                                            file_matches.end());
@@ -225,7 +198,7 @@ int main(int argc, char* argv[])
         int line_num = 1;
         while (std::getline(std::cin, line_input))
         {
-            if (matches_pattern(line_input, search_pattern))
+            if (matches_pattern(line_input, search_pattern, v_flag, i_flag))
             {
                 all_matches.push_back(
                     get_line_to_print(line_input, n_flag, r_flag, line_num));
