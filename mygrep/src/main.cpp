@@ -1,13 +1,13 @@
 #include <algorithm>
 #include <cctype>
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <regex> // REF_CHANGE: Include regex here for pre-compilation
 #include <string>
 #include <unistd.h> // For getopt, optarg, optind, opterr, optopt
 #include <utility>
 #include <vector>
-#include <regex> // REF_CHANGE: Include regex here for pre-compilation
 
 #include "project/my_grep.hpp" // Assumed to contain grep_lines function
 
@@ -29,7 +29,8 @@ int main(int argc, char* argv[])
         switch (c)
         {
             case 'r':
-                options.r_flag = true; // Still need a specific r_flag here for recursive logic
+                options.r_flag = true; // Still need a specific r_flag here for
+                                       // recursive logic
                 break;
             case 'v':
                 options.v_flag = true;
@@ -66,7 +67,8 @@ int main(int argc, char* argv[])
     if (optind < argc)
     {
         search_pattern = argv[optind];
-        optind++; // Move past the pattern to get to the file/directory arguments
+        optind++; // Move past the pattern to get to the file/directory
+                  // arguments
     }
     else
     {
@@ -76,7 +78,8 @@ int main(int argc, char* argv[])
     }
 
     // REF_CHANGE: Pre-compile the regex once
-    std::regex compiled_pattern = get_regex_pattern(search_pattern, options.i_flag);
+    std::regex compiled_pattern =
+        get_regex_pattern(search_pattern, options.i_flag);
 
     // All remaining non-option arguments are paths to search
     for (int i = optind; i < argc; ++i)
@@ -84,23 +87,10 @@ int main(int argc, char* argv[])
         paths_to_search.emplace_back(argv[i]);
     }
 
-    // If no paths are specified (e.g., ./mygrep -r pattern), default to current directory
-    // REF_CHANGE: Simplified condition as process_stream_for_matches now handles stdin
-    if (paths_to_search.empty() && !options.r_flag) // Only default to current directory if not recursive and no paths given
-    {
-        // If no paths AND not recursive, default to stdin, NOT current directory.
-        // If recursive AND no paths given, grep usually errors or implies current directory.
-        // For standard grep behavior, if no files are given and not recursive, it reads stdin.
-        // If -r is given without paths, it usually means current directory.
-        // This logic needs careful consideration. Sticking to initial logic:
-        // if no paths and not recursive, it will fall through to the stdin processing block.
-        // if no paths and recursive, then add "."
-    }
-
-    if (paths_to_search.empty() && options.r_flag) { // If recursive and no paths given, search current dir
+    if (paths_to_search.empty() && options.r_flag)
+    { // If recursive and no paths given, search current dir
         paths_to_search.push_back(".");
     }
-
 
     // --- 4. Store all found matches ---
     std::vector<std::string> all_matches;
@@ -110,6 +100,10 @@ int main(int argc, char* argv[])
     // If it's empty, we'll process stdin later.
     if (!paths_to_search.empty())
     {
+        // REF_CHANGE: Determine if filename prefix should be printed
+        bool print_filename_prefix_for_this_match =
+            paths_to_search.size() > 1 || options.r_flag;
+
         for (const std::string& current_path_str : paths_to_search)
         {
             const fs::path path = fs::path(current_path_str);
@@ -120,7 +114,8 @@ int main(int argc, char* argv[])
 
             if (ec)
             {
-                // Error getting status (e.g., path doesn't exist, permissions issue)
+                // Error getting status (e.g., path doesn't exist, permissions
+                // issue)
                 std::cerr << "mygrep: " << path.string() << ": " << ec.message()
                           << std::endl;
                 ec.clear(); // Clear the error code for subsequent checks
@@ -130,23 +125,32 @@ int main(int argc, char* argv[])
             if (fs::is_regular_file(status))
             {
                 std::ifstream file_stream(path); // Open the file stream
-                if (file_stream.is_open()) {
+                if (file_stream.is_open())
+                {
+                    std::string prefix = print_filename_prefix_for_this_match
+                                             ? path.string()
+                                             : "";
                     // REF_CHANGE: Use process_stream_for_matches
-                    std::vector<std::string> file_matches = process_stream_for_matches(
-                        file_stream, compiled_pattern, options, path.string());
+                    std::vector<std::string> file_matches =
+                        process_stream_for_matches(
+                            file_stream, compiled_pattern, options, prefix);
                     all_matches.insert(all_matches.end(), file_matches.begin(),
-                                    file_matches.end());
-                } else {
-                    std::cerr << "mygrep: " << path.string() << ": Permission denied" << std::endl;
+                                       file_matches.end());
+                }
+                else
+                {
+                    std::cerr << "mygrep: " << path.string()
+                              << ": Permission denied" << std::endl;
                 }
             }
             else if (fs::is_directory(status))
             {
                 if (!options.r_flag) // REF_CHANGE: Use options.r_flag
                 {
-                    // If not recursive, treat directories as an error (like grep)
-                    std::cerr << "mygrep: " << path.string() << ": Is a directory"
-                              << std::endl;
+                    // If not recursive, treat directories as an error (like
+                    // grep)
+                    std::cerr << "mygrep: " << path.string()
+                              << ": Is a directory" << std::endl;
                 }
                 else
                 {
@@ -164,15 +168,22 @@ int main(int argc, char* argv[])
                         if (fs::is_regular_file(dir_entry.path()))
                         {
                             std::ifstream file_stream(dir_entry.path());
-                            if (file_stream.is_open()) {
+                            if (file_stream.is_open())
+                            {
                                 // REF_CHANGE: Use process_stream_for_matches
-                                std::vector<std::string> file_matches = process_stream_for_matches(
-                                    file_stream, compiled_pattern, options, dir_entry.path().string());
+                                std::vector<std::string> file_matches =
+                                    process_stream_for_matches(
+                                        file_stream, compiled_pattern, options,
+                                        dir_entry.path().string());
                                 all_matches.insert(all_matches.end(),
-                                                file_matches.begin(),
-                                                file_matches.end());
-                            } else {
-                                std::cerr << "mygrep: " << dir_entry.path().string() << ": Permission denied" << std::endl;
+                                                   file_matches.begin(),
+                                                   file_matches.end());
+                            }
+                            else
+                            {
+                                std::cerr
+                                    << "mygrep: " << dir_entry.path().string()
+                                    << ": Permission denied" << std::endl;
                             }
                         }
                     }
@@ -180,13 +191,13 @@ int main(int argc, char* argv[])
             }
             else
             {
-                std::cerr << "mygrep: " << path.string()
-                          << ": Not a regular file or directory (or unhandled type)"
-                          << std::endl;
+                std::cerr
+                    << "mygrep: " << path.string()
+                    << ": Not a regular file or directory (or unhandled type)"
+                    << std::endl;
             }
         }
     }
-
 
     // -- 6. Process data read from standard input ----
     // REF_CHANGE: Only process stdin if no paths were provided at all.
@@ -194,8 +205,10 @@ int main(int argc, char* argv[])
     {
         // REF_CHANGE: Use process_stream_for_matches for stdin
         std::vector<std::string> stdin_matches = process_stream_for_matches(
-            std::cin, compiled_pattern, options); // No file_path_prefix for stdin
-        all_matches.insert(all_matches.end(), stdin_matches.begin(), stdin_matches.end());
+            std::cin, compiled_pattern, options,
+            ""); // Provide an empty string for file_path_prefix
+        all_matches.insert(all_matches.end(), stdin_matches.begin(),
+                           stdin_matches.end());
     }
 
     // --- 7. Print all collected matches to standard output ---
