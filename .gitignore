@@ -1,0 +1,8 @@
+a.out
+a.out.dSYM
+### VisualStudioCode ###
+.vscode/
+my-dprintf-breakpoints
+my-main-breakpoints
+*/build/
+.DS_Store
